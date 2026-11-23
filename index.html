@@ -347,14 +347,24 @@ return '<div data-nt><div style="text-align:center;margin:6px 0 10px">'+dots+'</
 /* ---------- Qibla compass ---------- */
 function qibla(){var p=S.pr,f=p.lat*Math.PI/180,l=p.lng*Math.PI/180,f2=21.4225*Math.PI/180,l2=39.8262*Math.PI/180,dl=l2-l,y=Math.sin(dl)*Math.cos(f2),x=Math.cos(f)*Math.sin(f2)-Math.sin(f)*Math.cos(f2)*Math.cos(dl);return (Math.atan2(y,x)*180/Math.PI+360)%360}
 function setQS(t){var e=$("#qs");if(e)e.textContent=t}
+var QH=null,QG=0;
 function qh(e){
 var n=$("#qn");
-if(!n){window.removeEventListener("deviceorientationabsolute",qh,true);window.removeEventListener("deviceorientation",qh,true);return}
+if(!n){window.removeEventListener("deviceorientationabsolute",qh,true);window.removeEventListener("deviceorientation",qh,true);QH=null;return}
 var hd=null;
-if(typeof e.webkitCompassHeading=="number")hd=e.webkitCompassHeading;
-else if((e.absolute||e.type=="deviceorientationabsolute")&&typeof e.alpha=="number")hd=(360-e.alpha)%360;
+if(typeof e.webkitCompassHeading=="number"&&e.webkitCompassHeading>=0)hd=e.webkitCompassHeading;
+else if((e.absolute||e.type=="deviceorientationabsolute")&&typeof e.alpha=="number"){
+var d=Math.PI/180,a=e.alpha*d,b=(e.beta||0)*d,g=(e.gamma||0)*d;
+if(Math.sin(b)>.8){var vx=-Math.cos(a)*Math.sin(g)-Math.sin(a)*Math.sin(b)*Math.cos(g),vy=-Math.sin(a)*Math.sin(g)+Math.cos(a)*Math.sin(b)*Math.cos(g);hd=Math.atan2(vx,vy)/d}
+else hd=-e.alpha;
+hd=((hd%360)+360)%360}
 if(hd===null)return;
-n.setAttribute("transform","rotate("+((qibla()-hd+360)%360).toFixed(1)+" 100 100)")}
+QG=Date.now();
+if(QH===null)QH=hd;else{var df=((hd-QH+540)%360)-180;QH=(QH+df*.3+360)%360}
+var rel=(qibla()-QH+360)%360;
+n.setAttribute("transform","rotate("+rel.toFixed(1)+" 100 100)");
+var ok=rel<6||rel>354;
+setQS(ok?L("✅ أنت متجه ناحية القبلة","✅ You are facing the Qibla"):L("امسك الموبايل أفقياً ودوّر لحد ما السهم يبقى لفوق.","Hold the phone flat and turn until the arrow points up."))}
 function qbS(){
 var b=Math.round(qibla());
 sheet('<div data-nt><h3>'+L("اتجاه القبلة","Qibla direction")+'</h3><p class="sub">'+L("القبلة على بُعد "+b+"° من الشمال مع اتجاه عقارب الساعة.","Qibla is "+b+"° from north, clockwise.")+'</p><div style="width:min(260px,70vw);margin:8px auto"><svg viewBox="0 0 200 200" style="display:block;width:100%"><circle cx="100" cy="100" r="90" class="rb"/><text x="100" y="20" text-anchor="middle" font-size="13" fill="var(--mu)">N</text><g id="qn" transform="rotate('+b+' 100 100)"><polygon points="100,38 114,100 86,100" fill="var(--ac)"/><polygon points="100,162 114,100 86,100" fill="var(--bd)"/><text x="100" y="34" text-anchor="middle" font-size="20">🕋</text><circle cx="100" cy="100" r="6" fill="var(--tx)"/></g></svg></div><small id="qs" style="text-align:center">'+L("من غير بوصلة: الصورة بتوضح الاتجاه والشمال (N) لفوق.","Without the compass: the picture shows the direction with north (N) at the top.")+'</small><button class="btn" data-a="qon">'+L("تشغيل البوصلة","Start compass")+'</button><button class="btn ghost" data-a="close">'+L("إغلاق","Close")+'</button></div>')}
@@ -469,7 +479,7 @@ obr:function(){OB={st:0,tpl:null};S.ob=0;save();render()},
 rmtg:function(t){S.ram.on=t.checked;if(t.checked)addRam();else S.habits=S.habits.filter(function(h){return !/^rm[1-5]$/.test(h.id)});save();render()},
 qb:function(){if(S.pr.lat===null)getLoc(function(ok){if(ok)qbS()});else qbS()},
 qon:function(){
-var go=function(){window.addEventListener("deviceorientationabsolute",qh,true);window.addEventListener("deviceorientation",qh,true);setQS(L("امسك الموبايل أفقياً ودوّر لحد ما السهم يبقى لفوق.","Hold the phone flat and turn until the arrow points up."))};
+var go=function(){window.addEventListener("deviceorientationabsolute",qh,true);window.addEventListener("deviceorientation",qh,true);QH=null;QG=0;setQS(L("امسك الموبايل أفقياً ودوّر لحد ما السهم يبقى لفوق.","Hold the phone flat and turn until the arrow points up."));setTimeout(function(){if(!QG&&$("#qn"))setQS(L("مفيش بيانات من البوصلة. جرّب من متصفح الموبايل (Chrome/Safari) على رابط https، وحرّك الموبايل على شكل 8 لمعايرته. الجهاز أو التطبيق ممكن ما يدعمش المستشعر.","No compass data. Try your phone’s browser (Chrome/Safari) over https and move the phone in a figure 8 to calibrate. This device or app may not support the sensor."))},2500)};
 try{
 if(typeof DeviceOrientationEvent!="undefined"&&DeviceOrientationEvent.requestPermission){DeviceOrientationEvent.requestPermission().then(function(r){if(r=="granted")go();else setQS(L("تم رفض إذن البوصلة.","Compass permission was denied."))}).catch(function(){setQS(L("البوصلة غير متاحة.","Compass isn’t available."))})}
 else if(typeof DeviceOrientationEvent!="undefined")go();
