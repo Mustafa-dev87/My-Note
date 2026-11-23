@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#f8f8f6">
+  <title>دفتر — ملاحظاتي</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/png" href="icon-192.png">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap">
+  <style>
+    :root{--bg:#f6f6f3;--panel:#fff;--ink:#20221f;--muted:#858982;--line:#e8e8e3;--green:#557260;--green-soft:#eef2ed;--gold:#cbbf83;--danger:#b85c55}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:"IBM Plex Sans Arabic",Tahoma,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh}
+    button,input,textarea{font:inherit}
+    button{cursor:pointer}
+    .app{display:grid;grid-template-columns:240px 330px minmax(380px,1fr);height:100vh}
+    .sidebar,.notelist,.editor{min-height:0}
+    .sidebar{background:#eeeee9;border-left:1px solid var(--line);padding:26px 18px;display:flex;flex-direction:column}
+    .brand{height:44px;display:flex;align-items:center;gap:10px;padding:0 8px;font-weight:600;font-size:18px}
+    .brandmark{width:28px;height:28px;border:1.5px solid var(--green);border-radius:8px;display:grid;place-items:center;color:var(--green)}
+    .new-note{height:46px;border:0;border-radius:12px;background:var(--green);color:#fff;margin:20px 0 18px;display:flex;align-items:center;justify-content:center;gap:8px;font-weight:600;box-shadow:0 5px 16px rgba(85,114,96,.13)}
+    .nav{display:grid;gap:3px}
+    .navbtn{height:43px;border:0;border-radius:9px;background:transparent;color:#666a63;text-align:right;padding:0 12px;display:flex;align-items:center;justify-content:flex-start;gap:10px}
+    .navbtn.active{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.04)}
+    .navbtn .count{margin-right:auto;color:#aaa;direction:ltr;font-size:12px}
+    .navicon{width:20px;text-align:center}
+    .folders-title{margin:24px 12px 8px;color:#a1a398;font-size:12px;font-weight:600}
+    .folder{height:38px;border:0;background:transparent;width:100%;border-radius:8px;padding:0 12px;color:#656860;text-align:right;display:flex;align-items:center;gap:9px}
+    .folder.active{background:#fff;color:var(--ink)}
+    .folder-dot{width:8px;height:8px;border-radius:50%;background:var(--gold)}
+    .profile{margin-top:auto;border-top:1px solid #deded8;padding:14px 8px 0;display:flex;align-items:center;gap:9px;color:#777b73;font-size:13px}
+    .avatar{width:34px;height:34px;border-radius:50%;background:#dfe5dd;display:grid;place-items:center;color:var(--green)}
+    .notelist{background:var(--panel);border-left:1px solid var(--line);display:flex;flex-direction:column}
+    .list-head{padding:24px 22px 14px}
+    .list-title-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+    .list-title-row h1{font-size:20px;margin:0;font-weight:600}
+    .iconbtn{width:36px;height:36px;border:0;border-radius:9px;background:transparent;color:#777b73;display:grid;place-items:center}
+    .iconbtn:hover{background:var(--bg)}
+    .search{height:42px;border:1px solid var(--line);border-radius:10px;background:#fafaf8;display:flex;align-items:center;padding:0 12px;gap:8px}
+    .search input{border:0;outline:0;background:transparent;width:100%;color:var(--ink)}
+    .search input::placeholder{color:#aaa}
+    .cards{overflow:auto;padding:2px 12px 24px}
+    .note-card{border:0;width:100%;border-bottom:1px solid var(--line);background:transparent;text-align:right;padding:16px 10px 14px;border-radius:8px;color:var(--ink)}
+    .note-card:hover{background:#fafaf8}
+    .note-card.active{background:var(--green-soft)}
+    .note-card-head{display:flex;align-items:center;gap:7px}
+    .note-card h3{font-size:15px;margin:0;font-weight:600;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .pin{color:#a8a69b;font-size:12px}
+    .note-card p{margin:8px 0 9px;color:#858982;font-size:13px;height:38px;overflow:hidden;line-height:1.5}
+    .meta{display:flex;align-items:center;gap:7px;color:#aaa;font-size:11px}
+    .tag{background:#f1f1ed;color:#777b73;border-radius:5px;padding:3px 7px}
+    .empty{padding:60px 20px;text-align:center;color:var(--muted)}
+    .editor{background:#fff;display:flex;flex-direction:column}
+    .editor-head{height:78px;border-bottom:1px solid var(--line);display:flex;align-items:center;padding:0 28px;gap:8px}
+    .save-state{margin-left:auto;margin-right:4px;color:#aaa;font-size:12px}
+    .editor-content{width:min(760px,100%);margin:0 auto;padding:48px 54px;overflow:auto}
+    .title-input{width:100%;border:0;outline:0;font-size:34px;font-weight:600;color:var(--ink);background:transparent}
+    .title-input::placeholder{color:#bbbdb7}
+    .note-tools{display:flex;align-items:center;gap:8px;margin:14px 0 28px;color:#9a9c95;font-size:12px}
+    .folder-select{border:0;background:var(--green-soft);color:var(--green);border-radius:7px;padding:5px 9px;font-size:12px}
+    .body-input{width:100%;min-height:52vh;border:0;outline:0;resize:none;background:transparent;color:#50534d;font-size:16px;line-height:2}
+    .body-input::placeholder{color:#bbbdb7}
+    .danger:hover{color:var(--danger)}
+    .mobile-back{display:none}
+    @media(max-width:980px){.app{grid-template-columns:210px 300px 1fr}.editor-content{padding:38px 32px}}
+    @media(max-width:760px){
+      .app{grid-template-columns:1fr;height:100dvh}.sidebar{display:none}.notelist{border-left:0}
+      .editor{display:none;position:fixed;inset:0;z-index:10}.app.editing .notelist{display:none}.app.editing .editor{display:flex}
+      .editor-head{height:68px;padding:0 14px}.editor-content{padding:32px 22px}.title-input{font-size:27px}.mobile-back{display:grid}
+    }
+  </style>
+</head>
+<body>
+  <div class="app" id="app">
+    <aside class="sidebar">
+      <div class="brand"><span class="brandmark">د</span><span>دفتر</span></div>
+      <button class="new-note" id="newNote">＋ &nbsp; ملاحظة جديدة</button>
+      <nav class="nav">
+        <button class="navbtn active" data-view="all"><span class="navicon">▦</span><span>كل الملاحظات</span><span class="count" id="allCount">0</span></button>
+        <button class="navbtn" data-view="pinned"><span class="navicon">☆</span><span>المثبتة</span><span class="count" id="pinCount">0</span></button>
+      </nav>
+      <div class="folders-title">المجلدات</div>
+      <div id="folders"></div>
+      <div class="profile"><div class="avatar">م</div><span>مساحتك الشخصية</span></div>
+    </aside>
+
+    <section class="notelist">
+      <div class="list-head">
+        <div class="list-title-row"><h1 id="listTitle">كل الملاحظات</h1><button class="iconbtn" id="sortBtn" title="ترتيب">↕</button></div>
+        <div class="search"><span>⌕</span><input id="search" placeholder="ابحث في الملاحظات..." aria-label="بحث"></div>
+      </div>
+      <div class="cards" id="cards"></div>
+    </section>
+
+    <main class="editor">
+      <header class="editor-head">
+        <button class="iconbtn mobile-back" id="backBtn" title="رجوع">›</button>
+        <button class="iconbtn" id="pinBtn" title="تثبيت">☆</button>
+        <span class="save-state" id="saveState">تم الحفظ</span>
+        <button class="iconbtn danger" id="deleteBtn" title="حذف">⌫</button>
+      </header>
+      <div class="editor-content">
+        <input class="title-input" id="titleInput" placeholder="عنوان الملاحظة">
+        <div class="note-tools">
+          <select class="folder-select" id="folderSelect" aria-label="المجلد">
+            <option value="عام">عام</option><option value="عمل">عمل</option><option value="أفكار">أفكار</option><option value="شخصي">شخصي</option>
+          </select>
+          <span id="dateLabel"></span>
+        </div>
+        <textarea class="body-input" id="bodyInput" placeholder="ابدأ الكتابة هنا..."></textarea>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const KEY="daftar-notes-v1";
+    const folders=["عام","عمل","أفكار","شخصي"];
+    let notes=[],activeId=null,currentView="all",sortNewest=true,saveTimer=null;
+    const $=s=>document.querySelector(s);
+    const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+    function load(){
+      try{notes=JSON.parse(localStorage.getItem(KEY)||"[]")}catch(e){notes=[]}
+      if(!notes.length){
+        const now=Date.now();
+        notes=[
+          {id:"n1",title:"قائمة مهام الأسبوع",body:"مراجعة المشروع الجديد\nتحضير اجتماع الاثنين\nتخصيص وقت للقراءة",folder:"عمل",pinned:true,updated:now-3600000*2},
+          {id:"n2",title:"أفكار لتصميم التطبيق",body:"واجهة هادئة وبسيطة\nمساحة واسعة للكتابة\nإمكانية تنظيم الملاحظات في مجلدات",folder:"أفكار",pinned:false,updated:now-3600000*20},
+          {id:"n3",title:"كتب أريد قراءتها",body:"فن اللامبالاة\nالعادات الذرية\nأفق جديد",folder:"شخصي",pinned:false,updated:now-86400000*2}
+        ];
+      }
+      activeId=notes[0]?.id||null;
+    }
+    function save(){
+      localStorage.setItem(KEY,JSON.stringify(notes));
+      $("#saveState").textContent="تم الحفظ";
+    }
+    function formatDate(ts){
+      const d=new Date(ts),now=new Date(),diff=Math.floor((now-d)/86400000);
+      if(diff===0)return "اليوم";
+      if(diff===1)return "أمس";
+      return d.toLocaleDateString("ar-EG",{month:"short",day:"numeric"});
+    }
+    function filtered(){
+      const q=$("#search").value.trim().toLowerCase();
+      let list=notes.filter(n=>{
+        const viewOk=currentView==="all"||n.pinned||(currentView.startsWith("folder:")&&n.folder===currentView.slice(7));
+        const searchOk=!q||`${n.title} ${n.body} ${n.folder}`.toLowerCase().includes(q);
+        return viewOk&&searchOk;
+      });
+      list.sort((a,b)=>sortNewest?(b.updated-a.updated):(a.updated-b.updated));
+      return list;
+    }
+    function renderFolders(){
+      $("#folders").innerHTML=folders.map(f=>`<button class="folder ${currentView==="folder:"+f?"active":""}" data-folder="${esc(f)}"><span class="folder-dot"></span>${esc(f)}</button>`).join("");
+      $("#allCount").textContent=notes.length;
+      $("#pinCount").textContent=notes.filter(n=>n.pinned).length;
+    }
+    function renderCards(){
+      const list=filtered();
+      if(!list.length){$("#cards").innerHTML='<div class="empty">لا توجد ملاحظات هنا</div>';return}
+      if(!list.some(n=>n.id===activeId))activeId=list[0].id;
+      $("#cards").innerHTML=list.map(n=>`
+        <button class="note-card ${n.id===activeId?"active":""}" data-id="${esc(n.id)}">
+          <div class="note-card-head">${n.pinned?'<span class="pin">◆</span>':''}<h3>${esc(n.title||"بدون عنوان")}</h3></div>
+          <p>${esc(n.body||"لا يوجد محتوى")}</p>
+          <div class="meta"><span>${formatDate(n.updated)}</span><span>·</span><span class="tag">${esc(n.folder)}</span></div>
+        </button>`).join("");
+    }
+    function renderEditor(){
+      const n=notes.find(x=>x.id===activeId);
+      if(!n){
+        $("#titleInput").value="";$("#bodyInput").value="";$("#dateLabel").textContent="";$("#pinBtn").textContent="☆";
+        return;
+      }
+      $("#titleInput").value=n.title||"";$("#bodyInput").value=n.body||"";$("#folderSelect").value=n.folder||"عام";
+      $("#dateLabel").textContent=formatDate(n.updated)+" · تم التحديث";
+      $("#pinBtn").textContent=n.pinned?"◆":"☆";
+    }
+    function updateTitle(view){
+      if(view==="all")return "كل الملاحظات";
+      if(view==="pinned")return "المثبتة";
+      if(view.startsWith("folder:"))return view.slice(7);
+    }
+    function render(){
+      renderFolders();renderCards();renderEditor();
+      $("#listTitle").textContent=updateTitle(currentView);
+    }
+    function touch(){
+      const n=notes.find(x=>x.id===activeId);
+      if(!n)return;
+      n.title=$("#titleInput").value;n.body=$("#bodyInput").value;n.folder=$("#folderSelect").value;n.updated=Date.now();
+      $("#saveState").textContent="يتم الحفظ...";
+      clearTimeout(saveTimer);saveTimer=setTimeout(save,350);
+      renderCards();
+    }
+    function newNote(){
+      const n={id:"n"+Date.now(),title:"",body:"",folder:currentView.startsWith("folder:")?currentView.slice(7):"عام",pinned:false,updated:Date.now()};
+      notes.unshift(n);activeId=n.id;save();render();
+      $("#titleInput").focus();
+      $("#app").classList.add("editing");
+    }
+    $("#newNote").addEventListener("click",newNote);
+    document.querySelectorAll(".navbtn").forEach(b=>b.addEventListener("click",()=>{
+      document.querySelectorAll(".navbtn").forEach(x=>x.classList.remove("active"));b.classList.add("active");
+      currentView=b.dataset.view;render();
+    }));
+    $("#folders").addEventListener("click",e=>{
+      const b=e.target.closest("[data-folder]");if(!b)return;
+      document.querySelectorAll(".navbtn").forEach(x=>x.classList.remove("active"));
+      currentView="folder:"+b.dataset.folder;render();
+    });
+    $("#cards").addEventListener("click",e=>{
+      const c=e.target.closest("[data-id]");if(!c)return;
+      activeId=c.dataset.id;renderCards();renderEditor();
+      $("#app").classList.add("editing");
+    });
+    $("#titleInput").addEventListener("input",touch);
+    $("#bodyInput").addEventListener("input",touch);
+    $("#folderSelect").addEventListener("change",touch);
+    $("#search").addEventListener("input",renderCards);
+    $("#pinBtn").addEventListener("click",()=>{
+      const n=notes.find(x=>x.id===activeId);if(!n)return;n.pinned=!n.pinned;n.updated=Date.now();save();render();
+    });
+    $("#deleteBtn").addEventListener("click",()=>{
+      if(!activeId)return;
+      const i=notes.findIndex(n=>n.id===activeId);if(i<0)return;
+      if(confirm("هل تريد حذف هذه الملاحظة؟")){
+        notes.splice(i,1);activeId=notes[0]?.id||null;save();render();
+      }
+    });
+    $("#sortBtn").addEventListener("click",()=>{sortNewest=!sortNewest;renderCards()});
+    $("#backBtn").addEventListener("click",()=>$("#app").classList.remove("editing"));
+    load();render();
+    if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
+  </script>
+</body>
+</html>
