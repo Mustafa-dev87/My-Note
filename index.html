@@ -119,7 +119,19 @@ A.forEach(function(x,i){var a=-Math.PI/2+i*2*Math.PI/n,r=R*(x[1]||0);pts.push((c
 var w=v.slice().sort(function(a,b){return a[1]-b[1]})[0],best=0;S.habits.forEach(function(h){best=Math.max(best,streak(h))});
 var bars=[6,5,4,3,2,1,0].map(function(i){var d=new Date();d.setDate(d.getDate()-i);var k=dk(d),t=S.habits.length,c=S.habits.filter(function(h){return prog(h,k)>=1}).length,p=t?c/t:0;return '<div style="flex:1;text-align:center"><div style="height:70px;display:flex;align-items:flex-end"><i style="display:block;width:100%;height:'+Math.max(p*100,4)+'%;background:var(--ac);border-radius:6px;opacity:'+(p?1:.25)+'"></i></div><small>'+d.getDate()+'</small></div>'}).join("");
 return '<h1>Mizan 360</h1><p class="sub">صورة كاملة لتوازن يومك</p><div class="card" style="text-align:center"><div class="big" style="color:var(--ac)">'+sc+'<span style="font-size:18px;color:var(--mu)"> / 100</span></div><b>'+(sc>=80?"يوم متوازن جداً":sc>=50?"يوم كويس، كمّل":"ابدأ بخطوة صغيرة")+'</b><svg viewBox="0 0 260 240" style="width:100%;max-width:340px">'+grid+'<polygon points="'+pts.join(" ")+'" style="fill:var(--acs)" stroke="var(--ac)" stroke-width="2"/>'+lab+'</svg><p class="sub" style="margin:0">أضعف مجال اليوم: <b style="color:var(--tx)">'+w[0]+'</b></p></div>'+rmCard()+pcCard()+lvCard()+tasksCard()+'<button class="btn" data-a="tab" data-v="t">ابدأ جلسة تركيز</button><div class="card" style="margin-top:14px"><b>إنجازك آخر 7 أيام</b><div style="display:flex;gap:8px;margin-top:10px">'+bars+'</div></div><div class="card" style="margin-top:14px;display:flex;justify-content:space-between"><span>أطول سلسلة التزام</span><b>🔥 '+best+' يوم</b></div>'+repCard()}
-var WL=null;function wl(){try{if(T.run&&navigator.wakeLock){navigator.wakeLock.request("screen").then(function(l){WL=l}).catch(function(){})}else if(WL){WL.release();WL=null}}catch(e){}}
+function tnNative(){var ln=LN();if(!ln)return;
+ln.cancel({notifications:[{id:2}]}).catch(function(){}).then(function(){
+if(!T.run||T.end<=Date.now())return;var en=S.lang=="en",b;
+if(T.mode=="d")b=en?"Your phone-free session is done 🎉":"خلصت جلسة قطع التليفون 🎉";
+else if(T.mode=="p")b=T.ph=="f"?(en?"Focus session done. Take a break ☕":"خلصت جلسة التركيز، خد استراحة ☕"):(en?"Break is over. Back to focus 💪":"الاستراحة خلصت، يلا نكمل 💪");
+else b=en?"Time is up ⏰":"انتهى الوقت ⏰";
+return ln.schedule({notifications:[{id:2,title:"Mizan 360",body:b,schedule:{at:new Date(T.end),allowWhileIdle:true}}]})}).catch(function(){})}
+function saveT(){try{if(T.run)localStorage.setItem("mizan_t",JSON.stringify({end:T.end,mode:T.mode,ph:T.ph,cyc:T.cyc,dmin:T.dmin,cat:T.cat,total:T.total}));else localStorage.removeItem("mizan_t")}catch(e){}}
+function restoreT(){try{var o=JSON.parse(localStorage.getItem("mizan_t")||"null");
+if(!o||!isFinite(o.end)||(o.mode!="d"&&o.mode!="p")||["f","s","l"].indexOf(o.ph)<0||!(o.total>0&&o.total<=86400))return;
+T.mode=o.mode;T.ph=o.ph;T.cyc=Math.max(1,Math.min(99,+o.cyc||1));T.dmin=Math.max(1,Math.min(1440,+o.dmin||5));T.cat=CATS.indexOf(o.cat)>-1?o.cat:T.cat;T.total=o.total;T.end=+o.end;T.run=true;T.left=Math.max(0,Math.ceil((T.end-Date.now())/1000));S.tab="t";
+if(T.left<=0)fin();else wl()}catch(e){}}
+var WL=null;function wl(){saveT();tnNative();try{if(T.run&&navigator.wakeLock){navigator.wakeLock.request("screen").then(function(l){WL=l}).catch(function(){})}else if(WL){WL.release();WL=null}}catch(e){}}
 function tasksCard(){S.tasks=S.tasks.filter(function(x){return !x.d||x.k==td()});var L=S.tasks,d=L.filter(function(x){return x.d}).length;
 return '<div class="card" style="margin:14px 0"><div style="display:flex;justify-content:space-between"><b>مهام اليوم</b><small>'+d+' / '+L.length+'</small></div>'+L.map(function(x,i){return '<div class="ln" style="align-items:center"><span data-a="tk" data-i="'+i+'" style="cursor:pointer;flex:1;'+(x.d?'text-decoration:line-through;color:var(--mu)':'')+'">'+(x.d?'☑ ':'☐ ')+esc(x.t)+'</span><button class="cell" data-a="tx" data-i="'+i+'">×</button></div>'}).join("")+'<div style="display:flex;gap:8px;margin-top:10px"><input type="text" id="tn" placeholder="مهمة جديدة..." style="flex:1;padding:10px 12px;border-radius:12px;border:1px solid var(--bd);background:var(--in);color:var(--tx);font:inherit"><button class="chip on" data-a="ta">إضافة</button></div></div>'}
 function wk(o){var t=S.habits.length,r={c:0,f:0,s:0,a:{}};AR.forEach(function(a){r.a[a]=[0,0]});
@@ -278,7 +290,7 @@ var ln=LN();if(!ln||NB)return;
 var sig=[S.rem.on,S.rem.t,S.pr.on,S.pr.nt,S.pr.lat,S.pr.lng,S.pr.m,S.lang,S.ram.on,td()].join("|");
 if(!force&&sig==NSG&&Date.now()-NST<216e5)return;
 NB=1;
-ln.getPending().then(function(r){var a=(r.notifications||[]).map(function(x){return {id:x.id}});return a.length?ln.cancel({notifications:a}):0}).then(function(){
+ln.getPending().then(function(r){var a=(r.notifications||[]).filter(function(x){return x.id!=2}).map(function(x){return {id:x.id}});return a.length?ln.cancel({notifications:a}):0}).then(function(){
 var en=S.lang=="en",list=[];
 if(S.rem.on){var t=S.rem.t.split(":");list.push({id:1,title:"Mizan 360",body:en?"Check your habits for today 🌿":"راجع عاداتك النهارده وكمّل اللي فاضل 🌿",schedule:{on:{hour:+t[0],minute:+t[1]},allowWhileIdle:true}})}
 if(S.pr.on&&S.pr.nt&&S.pr.lat!==null)return nativePrayers().then(function(a){return list.concat(a)});
@@ -542,7 +554,7 @@ if(!document.hidden){var k=td();S.screen[k]=(S.screen[k]||0)+1;sv++;if(sv%10==0)
 ck++;if(ck%15==0)chk();
 if(T.run){T.left=Math.max(0,Math.ceil((T.end-Date.now())/1000));updT();if(T.left<=0)fin()}},1000);
 document.addEventListener("keydown",function(e){if(e.key=="Enter"&&e.target.id=="tn")act.ta()});
-ap();setT();hdr();render();setTimeout(chk,1500);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()});
+ap();setT();hdr();restoreT();render();setTimeout(chk,1500);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()});
 </script>
 <script>if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(function(){})</script>
 </body>
