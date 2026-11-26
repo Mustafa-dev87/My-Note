@@ -195,12 +195,17 @@ function mins(s){var a=String(s).split(":");return (+a[0])*60+(+a[1])}
 function leftN(){return S.habits.filter(function(h){return prog(h,td())<1}).length}
 
 /* ---------- Notifications ---------- */
+function LN(){try{var c=window.Capacitor;if(c&&c.isNativePlatform&&c.isNativePlatform()&&c.Plugins&&c.Plugins.LocalNotifications)return c.Plugins.LocalNotifications}catch(e){}return null}
 function askN(cb){
+var ln=LN();
+if(ln){ln.checkPermissions().then(function(r){if(r.display=="granted")return cb(1);return ln.requestPermissions().then(function(r2){if(r2.display!="granted")toast(L("الإشعارات محظورة من إعدادات الموبايل","Notifications are blocked in phone settings"));cb(r2.display=="granted")})}).catch(function(){cb(0)});return}
 if(!("Notification" in window)){toast("الإشعارات غير مدعومة في المتصفح ده");return cb(0)}
 if(Notification.permission=="granted")return cb(1);
 if(Notification.permission=="denied"){toast("الإشعارات محظورة من إعدادات المتصفح");return cb(0)}
 try{Notification.requestPermission().then(function(r){cb(r=="granted")}).catch(function(){cb(0)})}catch(e){cb(0)}}
 function notif(t,b,tag){
+var ln=LN();
+if(ln){ln.schedule({notifications:[{id:Math.floor(Math.random()*2e9)+1,title:t,body:b}]}).catch(function(){});return true}
 if(!("Notification" in window)||Notification.permission!="granted")return false;
 var o={body:b,icon:"icon-192.png",badge:"icon-192.png",tag:tag||"mz",lang:S.lang,dir:S.lang=="en"?"ltr":"rtl"};
 try{
@@ -244,15 +249,40 @@ function refPC(){var e=$("#pc");if(e){e.innerHTML=pcInner();tr(e)}var s=$("#pst"
 /* ---------- Periodic check: reminders + prayer alerts ---------- */
 function chk0(){
 var k=td(),d=new Date(),nm=d.getHours()*60+d.getMinutes(),en=S.lang=="en";
-if(S.rem.on&&S.remD!=k){
+if(S.rem.on&&S.remD!=k&&!LN()){
 var rm=mins(S.rem.t);
 if(nm>=rm&&nm<=rm+180){S.remD=k;save();var n=leftN();if(n>0)notif("Mizan 360",en?n+" habits left today":"باقي "+n+" عادة النهارده","rem")}}
 if(S.pr.on){
 var c=S.pr.c;
 if(!c||c.d!=k||c.m!=S.pr.m)fetchPT();
-else if(S.pr.nt){
+else if(S.pr.nt&&!LN()){
 if(S.pfd.d!=k)S.pfd={d:k};
 PN.forEach(function(x){var t=mins(c.t[x[0]]);if(nm>=t&&nm<=t+10&&!S.pfd[x[0]]){S.pfd[x[0]]=1;save();notif("Mizan 360",(S.ram.on&&x[0]=="Maghrib"&&rmIn())?(en?"Time for Iftar 🌙":"حان وقت الإفطار 🌙"):(en?"Time for "+x[0]:"حان وقت "+x[1]),"p"+x[0])}})}}}
+
+/* ---------- Native (Android app) scheduled notifications: work while the app is closed ---------- */
+var NSG="",NST=0,NB=0;
+function nativePrayers(){
+var p=S.pr,now=new Date(),out=[],ms=[[now.getFullYear(),now.getMonth()+1]],nx=new Date(now.getFullYear(),now.getMonth()+1,1);ms.push([nx.getFullYear(),nx.getMonth()+1]);
+var lim=new Date(now.getTime()+7*864e5),en=S.lang=="en",id=100;
+return Promise.all(ms.map(function(m){return fetch("https://api.aladhan.com/v1/calendar/"+m[0]+"/"+m[1]+"?latitude="+p.lat+"&longitude="+p.lng+"&method="+p.m).then(function(r){if(!r.ok)throw 0;return r.json()}).then(function(j){return j.data||[]})})).then(function(all){
+[].concat.apply([],all).forEach(function(day){
+var g=day&&day.date&&day.date.gregorian&&day.date.gregorian.date,mt=/^(\d\d)-(\d\d)-(\d{4})$/.exec(g||"");if(!mt)return;
+PN.forEach(function(x){var v=String(day.timings[x[0]]).slice(0,5);if(!/^\d\d:\d\d$/.test(v))return;
+var at=new Date(+mt[3],+mt[2]-1,+mt[1],+v.slice(0,2),+v.slice(3,5));
+if(at<=now||at>lim)return;
+var iftar=S.ram.on&&x[0]=="Maghrib"&&(function(){var h=hij(at);return !!h&&h.month==9})();
+out.push({id:id++,title:"Mizan 360",body:iftar?(en?"Time for Iftar 🌙":"حان وقت الإفطار 🌙"):(en?"Time for "+x[0]:"حان وقت "+x[1]),schedule:{at:at,allowWhileIdle:true}})})});
+return out})}
+function schedNative(force){
+var ln=LN();if(!ln||NB)return;
+var sig=[S.rem.on,S.rem.t,S.pr.on,S.pr.nt,S.pr.lat,S.pr.lng,S.pr.m,S.lang,S.ram.on,td()].join("|");
+if(!force&&sig==NSG&&Date.now()-NST<216e5)return;
+NB=1;
+ln.getPending().then(function(r){var a=(r.notifications||[]).map(function(x){return {id:x.id}});return a.length?ln.cancel({notifications:a}):0}).then(function(){
+var en=S.lang=="en",list=[];
+if(S.rem.on){var t=S.rem.t.split(":");list.push({id:1,title:"Mizan 360",body:en?"Check your habits for today 🌿":"راجع عاداتك النهارده وكمّل اللي فاضل 🌿",schedule:{on:{hour:+t[0],minute:+t[1]},allowWhileIdle:true}})}
+if(S.pr.on&&S.pr.nt&&S.pr.lat!==null)return nativePrayers().then(function(a){return list.concat(a)});
+return list}).then(function(list){return list.length?ln.schedule({notifications:list}):0}).then(function(){NSG=sig;NST=Date.now();NB=0}).catch(function(){NB=0})}
 
 /* ---------- Import: validate and clean everything ---------- */
 function clean(o){
@@ -394,7 +424,7 @@ else b+='<p class="sub" style="margin:8px 0 0">'+L("فعّل مواقيت الص
 else b='<b>'+L("وضع رمضان","Ramadan mode")+'</b><p class="sub" style="margin:8px 0 0">'+L("باقي حوالي "+r.n+" يوم على رمضان.","About "+r.n+" days until Ramadan.")+'</p>';
 return '<div class="card" data-nt style="margin:14px 0">'+b+'</div>'}
 
-function chk(){chk0();gdAuto()}
+function chk(){chk0();schedNative();gdAuto()}
 
 /* ---------- Google Drive backup (appDataFolder) ---------- */
 /* Put your Google OAuth Web Client ID here (see README). Leave empty to disable. */

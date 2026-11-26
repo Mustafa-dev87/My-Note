@@ -2,5 +2,11 @@
   "appId": "com.mizan360.app",
   "appName": "Mizan 360",
   "webDir": "www",
-  "backgroundColor": "#0a0e17"
+  "backgroundColor": "#0a0e17",
+  "plugins": {
+    "LocalNotifications": {
+      "smallIcon": "ic_stat_icon",
+      "iconColor": "#0EA5E9"
+    }
+  }
 }

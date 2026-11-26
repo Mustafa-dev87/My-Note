@@ -2,13 +2,14 @@
   "name": "mizan-360",
   "version": "1.0.0",
   "private": true,
-  "description": "Mizan 360 - ميزان 360",
+  "description": "Mizan 360 - \u0645\u064a\u0632\u0627\u0646 360",
   "scripts": {
     "prepare-www": "node scripts/prepare-www.js"
   },
   "dependencies": {
     "@capacitor/android": "^6.1.2",
     "@capacitor/cli": "^6.1.2",
-    "@capacitor/core": "^6.1.2"
+    "@capacitor/core": "^6.1.2",
+    "@capacitor/local-notifications": "^6.1.0"
   }
 }
