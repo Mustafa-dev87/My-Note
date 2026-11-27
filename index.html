@@ -125,7 +125,7 @@ if(!T.run||T.end<=Date.now())return;var en=S.lang=="en",b;
 if(T.mode=="d")b=en?"Your phone-free session is done 🎉":"خلصت جلسة قطع التليفون 🎉";
 else if(T.mode=="p")b=T.ph=="f"?(en?"Focus session done. Take a break ☕":"خلصت جلسة التركيز، خد استراحة ☕"):(en?"Break is over. Back to focus 💪":"الاستراحة خلصت، يلا نكمل 💪");
 else b=en?"Time is up ⏰":"انتهى الوقت ⏰";
-return ln.schedule({notifications:[{id:2,title:"Mizan 360",body:b,schedule:{at:new Date(T.end),allowWhileIdle:true}}]})}).catch(function(){})}
+return ln.schedule({notifications:[{id:2,channelId:CH,title:"Mizan 360",body:b,schedule:{at:new Date(T.end),allowWhileIdle:true}}]})}).catch(function(){})}
 function saveT(){try{if(T.run)localStorage.setItem("mizan_t",JSON.stringify({end:T.end,mode:T.mode,ph:T.ph,cyc:T.cyc,dmin:T.dmin,cat:T.cat,total:T.total}));else localStorage.removeItem("mizan_t")}catch(e){}}
 function restoreT(){try{var o=JSON.parse(localStorage.getItem("mizan_t")||"null");
 if(!o||!isFinite(o.end)||(o.mode!="d"&&o.mode!="p")||["f","s","l"].indexOf(o.ph)<0||!(o.total>0&&o.total<=86400))return;
@@ -207,7 +207,8 @@ function mins(s){var a=String(s).split(":");return (+a[0])*60+(+a[1])}
 function leftN(){return S.habits.filter(function(h){return prog(h,td())<1}).length}
 
 /* ---------- Notifications ---------- */
-function LN(){try{var c=window.Capacitor;if(c&&c.isNativePlatform&&c.isNativePlatform()&&c.Plugins&&c.Plugins.LocalNotifications)return c.Plugins.LocalNotifications}catch(e){}return null}
+var CH="mizan_alerts_v1",CHA="mizan_adhan_v1",CHD=0;
+function LN(){try{var c=window.Capacitor;if(c&&c.isNativePlatform&&c.isNativePlatform()&&c.Plugins&&c.Plugins.LocalNotifications){var p=c.Plugins.LocalNotifications;if(!CHD&&p.createChannel){CHD=1;try{p.createChannel({id:CH,name:"تنبيهات ميزان / Mizan alerts",description:"Reminders, prayer times and timers",importance:5,sound:"mizan_ring.wav",vibration:true,visibility:1}).catch(function(){CHD=0});p.createChannel({id:CHA,name:"الأذان / Adhan",description:"Prayer time adhan",importance:5,sound:"adhan.mp3",vibration:true,visibility:1}).catch(function(){})}catch(e){CHD=0}}return p}}catch(e){}return null}
 function askN(cb){
 var ln=LN();
 if(ln){ln.checkPermissions().then(function(r){if(r.display=="granted")return cb(1);return ln.requestPermissions().then(function(r2){if(r2.display!="granted")toast(L("الإشعارات محظورة من إعدادات الموبايل","Notifications are blocked in phone settings"));cb(r2.display=="granted")})}).catch(function(){cb(0)});return}
@@ -217,7 +218,7 @@ if(Notification.permission=="denied"){toast("الإشعارات محظورة م�
 try{Notification.requestPermission().then(function(r){cb(r=="granted")}).catch(function(){cb(0)})}catch(e){cb(0)}}
 function notif(t,b,tag){
 var ln=LN();
-if(ln){ln.schedule({notifications:[{id:Math.floor(Math.random()*2e9)+1,title:t,body:b}]}).catch(function(){});return true}
+if(ln){ln.schedule({notifications:[{id:Math.floor(Math.random()*2e9)+1,channelId:CH,title:t,body:b}]}).catch(function(){});return true}
 if(!("Notification" in window)||Notification.permission!="granted")return false;
 var o={body:b,icon:"icon-192.png",badge:"icon-192.png",tag:tag||"mz",lang:S.lang,dir:S.lang=="en"?"ltr":"rtl"};
 try{
@@ -283,7 +284,7 @@ PN.forEach(function(x){var v=String(day.timings[x[0]]).slice(0,5);if(!/^\d\d:\d\
 var at=new Date(+mt[3],+mt[2]-1,+mt[1],+v.slice(0,2),+v.slice(3,5));
 if(at<=now||at>lim)return;
 var iftar=S.ram.on&&x[0]=="Maghrib"&&(function(){var h=hij(at);return !!h&&h.month==9})();
-out.push({id:id++,title:"Mizan 360",body:iftar?(en?"Time for Iftar 🌙":"حان وقت الإفطار 🌙"):(en?"Time for "+x[0]:"حان وقت "+x[1]),schedule:{at:at,allowWhileIdle:true}})})});
+out.push({id:id++,channelId:CHA,title:"Mizan 360",body:iftar?(en?"Time for Iftar 🌙":"حان وقت الإفطار 🌙"):(en?"Time for "+x[0]:"حان وقت "+x[1]),schedule:{at:at,allowWhileIdle:true}})})});
 return out})}
 function schedNative(force){
 var ln=LN();if(!ln||NB)return;
@@ -292,7 +293,7 @@ if(!force&&sig==NSG&&Date.now()-NST<216e5)return;
 NB=1;
 ln.getPending().then(function(r){var a=(r.notifications||[]).filter(function(x){return x.id!=2}).map(function(x){return {id:x.id}});return a.length?ln.cancel({notifications:a}):0}).then(function(){
 var en=S.lang=="en",list=[];
-if(S.rem.on){var t=S.rem.t.split(":");list.push({id:1,title:"Mizan 360",body:en?"Check your habits for today 🌿":"راجع عاداتك النهارده وكمّل اللي فاضل 🌿",schedule:{on:{hour:+t[0],minute:+t[1]},allowWhileIdle:true}})}
+if(S.rem.on){var t=S.rem.t.split(":");list.push({id:1,channelId:CH,title:"Mizan 360",body:en?"Check your habits for today 🌿":"راجع عاداتك النهارده وكمّل اللي فاضل 🌿",schedule:{on:{hour:+t[0],minute:+t[1]},allowWhileIdle:true}})}
 if(S.pr.on&&S.pr.nt&&S.pr.lat!==null)return nativePrayers().then(function(a){return list.concat(a)});
 return list}).then(function(list){return list.length?ln.schedule({notifications:list}):0}).then(function(){NSG=sig;NST=Date.now();NB=0}).catch(function(){NB=0})}
 
