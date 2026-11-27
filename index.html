@@ -275,7 +275,7 @@ PN.forEach(function(x){var t=mins(c.t[x[0]]);if(nm>=t&&nm<=t+10&&!S.pfd[x[0]]){S
 var NSG="",NST=0,NB=0;
 function nativePrayers(){
 var p=S.pr,now=new Date(),out=[],ms=[[now.getFullYear(),now.getMonth()+1]],nx=new Date(now.getFullYear(),now.getMonth()+1,1);ms.push([nx.getFullYear(),nx.getMonth()+1]);
-var lim=new Date(now.getTime()+7*864e5),en=S.lang=="en",id=100;
+var lim=new Date(now.getTime()+30*864e5),en=S.lang=="en",id=100;
 return Promise.all(ms.map(function(m){return fetch("https://api.aladhan.com/v1/calendar/"+m[0]+"/"+m[1]+"?latitude="+p.lat+"&longitude="+p.lng+"&method="+p.m).then(function(r){if(!r.ok)throw 0;return r.json()}).then(function(j){return j.data||[]})})).then(function(all){
 [].concat.apply([],all).forEach(function(day){
 var g=day&&day.date&&day.date.gregorian&&day.date.gregorian.date,mt=/^(\d\d)-(\d\d)-(\d{4})$/.exec(g||"");if(!mt)return;
