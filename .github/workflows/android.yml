@@ -52,6 +52,11 @@ jobs:
           os.makedirs('android/app/src/main/res/drawable', exist_ok=True)
           im.save('android/app/src/main/res/drawable/ic_stat_icon.png')
           PY
+      - name: Add notification sound
+        run: |
+          mkdir -p android/app/src/main/res/raw
+          cp mizan_ring.wav android/app/src/main/res/raw/mizan_ring.wav
+          if [ -f adhan.mp3 ]; then cp adhan.mp3 android/app/src/main/res/raw/adhan.mp3; else cp mizan_ring.wav android/app/src/main/res/raw/adhan.wav; fi
       - run: npx cap sync android
       - run: cd android && chmod +x gradlew && ./gradlew assembleDebug
       - uses: actions/upload-artifact@v4
