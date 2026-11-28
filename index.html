@@ -30,6 +30,11 @@ h1{font-size:28px;margin:8px 0 2px}h3{margin:0 0 12px;font-size:20px}
 .row{display:grid;grid-template-columns:1fr repeat(4,46px);align-items:center;padding:10px 0;border-top:1px solid var(--bd)}
 .dh{border-top:0;font-size:12px;color:var(--mu);text-align:center;margin-top:8px}.dh .sum{text-align:start}.dh .td{color:var(--ac)}.dh b{font-size:15px}
 .nm{display:flex;align-items:center;gap:10px;cursor:pointer}.nm b{color:var(--c)}
+.adk{border:1px solid var(--bd);background:var(--in);color:var(--tx);font:inherit;font-size:12px;border-radius:999px;padding:5px 12px;margin-top:6px;cursor:pointer}
+.ad-i{background:var(--in);border:1px solid var(--bd);border-radius:18px;padding:14px;margin:10px 0;cursor:pointer;user-select:none}
+.ad-i.done{opacity:.55}.ad-t{margin:0;font-size:19px;line-height:2.1;text-align:center}
+.ad-f{display:flex;justify-content:space-between;align-items:center;margin-top:8px}.ad-c{font-weight:700;color:var(--ac);font-size:20px;font-variant-numeric:tabular-nums}.ad-i.tap{transform:scale(.985);background:var(--acs)}.ad-i{transition:transform .08s,background .12s}
+.ad-d{border:0;background:var(--card);color:var(--mu);font:inherit;font-size:13px;border-radius:999px;padding:6px 14px;cursor:pointer}
 .cell{border:0;background:none;height:40px;font:inherit;font-size:14px;color:var(--mu);cursor:pointer;opacity:.6}.cell.ok{color:var(--c);opacity:1;font-weight:700;font-size:16px}
 .chips{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}
 .chip{border:1px solid var(--bd);background:var(--in);color:var(--tx);border-radius:12px;padding:8px 14px;font:inherit;font-size:14px;cursor:pointer}.chip.on{border-color:var(--ac);color:var(--ac);background:rgba(14,165,233,.12)}
@@ -80,7 +85,7 @@ var DN=["الأحد","الإثنين","الثلاثاء","الأربعاء","ا�
 var CATS=["قراءة","مذاكرة","قطع التليفون","مراجعة","عمل عميق"];
 var S={lang:"ar",dark:true,limit:2,lock:true,eye:false,sound:true,habits:[],log:{},screen:{},sess:{},tasks:[],hrs:{},tab:"d",filter:"all",ac:"#0ea5e9",rem:{on:false,t:"20:00"},remD:"",pr:{on:false,m:5,lat:null,lng:null,nt:false,c:null},pfd:{},ram:{on:false},th:"def",fn:"Cairo",gd:{on:false,ok:false,t:0}};
 try{Object.assign(S,JSON.parse(localStorage.getItem(K)||"{}"))}catch(e){}
-S.rem=Object.assign({on:false,t:"20:00"},S.rem);S.gd=Object.assign({on:false,ok:false,t:0},S.gd);S.pr=Object.assign({on:false,m:5,lat:null,lng:null,nt:false,c:null},S.pr);if(!S.pfd)S.pfd={};if(!/^#[0-9a-f]{6}$/i.test(S.ac))S.ac="#0ea5e9";
+S.rem=Object.assign({on:false,t:"20:00"},S.rem);S.sal=Object.assign({on:false,l:""},S.sal);S.gd=Object.assign({on:false,ok:false,t:0},S.gd);S.pr=Object.assign({on:false,m:5,lat:null,lng:null,nt:false,c:null},S.pr);if(!S.pfd)S.pfd={};if(!/^#[0-9a-f]{6}$/i.test(S.ac))S.ac="#0ea5e9";
 var firstRun=!S.init;if(!S.init){S.init=1;S.habits=[
 {id:"a1",name:"أذكار الصباح",type:"yn",goal:0,color:"#fb923c"},
 {id:"a2",name:"غسيل الأسنان",type:"yn",goal:0,color:"#f472b6"},
@@ -164,7 +169,7 @@ var f=[["all","الكل"],["yn","أيوة أو لأ"],["min","بالدقائق"]
 var hd=ds.map(function(d,i){return '<span class="'+(i?"":"td")+'">'+DN[d.getDay()]+'<br><b>'+d.getDate()+'</b></span>'}).join("");
 var rows=L.length?L.map(function(h){
 var cells=ds.map(function(d){var k=dk(d),v=val(h,k),ok=h.type=="yn"?v:v>0;return '<button class="cell '+(ok?"ok":"")+'" data-a="cell" data-h="'+h.id+'" data-d="'+k+'">'+(ok?(h.type=="yn"?"✓":v+" د"):"×")+'</button>'}).join("");
-return '<div class="row" style="--c:'+h.color+'"><div class="nm" data-a="edit" data-h="'+h.id+'">'+ring(prog(h,td()),h.color)+'<div><b>'+esc(h.name)+'</b><small>'+(h.type=="yn"?"أيوة أو لأ":"بالدقائق"+(h.goal?" · الهدف "+h.goal+" د":""))+(streak(h)>1?" · 🔥 "+streak(h):"")+'</small></div></div>'+cells+'</div>'}).join(""):'<p class="sub" style="text-align:center;margin:24px 0 8px">لا توجد عادات هنا. أضف أول عادة.</p>';
+return '<div class="row" style="--c:'+h.color+'"><div class="nm" data-a="edit" data-h="'+h.id+'">'+ring(prog(h,td()),h.color)+'<div><b>'+esc(h.name)+'</b><small>'+(h.type=="yn"?"أيوة أو لأ":"بالدقائق"+(h.goal?" · الهدف "+h.goal+" د":""))+(streak(h)>1?" · 🔥 "+streak(h):"")+'</small>'+(adk(h)?'<button class="adk" data-a="adk" data-h="'+h.id+'">📖 '+(S.lang=="en"?"Read adhkar":"اقرأ الأذكار")+'</button>':"")+'</div></div>'+cells+'</div>'}).join(""):'<p class="sub" style="text-align:center;margin:24px 0 8px">لا توجد عادات هنا. أضف أول عادة.</p>';
 return '<h1>العادات اليومية</h1><p class="sub">تتبع عاداتك بالالتزام اليومي أو بالدقائق</p><button class="btn" data-a="add">＋ عادة جديدة</button><div class="card" style="margin-top:18px"><div class="seg">'+f+'</div><div class="row dh"><span class="sum">إنجاز اليوم · '+n+' / '+S.habits.length+'</span>'+hd+'</div>'+rows+'</div>'}
 
 function addS(){var t=tmp;
@@ -262,6 +267,7 @@ function refPC(){var e=$("#pc");if(e){e.innerHTML=pcInner();tr(e)}var s=$("#pst"
 /* ---------- Periodic check: reminders + prayer alerts ---------- */
 function chk0(){
 var k=td(),d=new Date(),nm=d.getHours()*60+d.getMinutes(),en=S.lang=="en";
+if(S.sal.on&&!LN()){var sk=k+"-"+d.getHours();if(d.getMinutes()<=10&&S.sal.l!=sk){S.sal.l=sk;save();notif("Mizan 360",salT(),"sal")}}
 if(S.rem.on&&S.remD!=k&&!LN()){
 var rm=mins(S.rem.t);
 if(nm>=rm&&nm<=rm+180){S.remD=k;save();var n=leftN();if(n>0)notif("Mizan 360",en?n+" habits left today":"باقي "+n+" عادة النهارده","rem")}}
@@ -271,6 +277,10 @@ if(!c||c.d!=k||c.m!=S.pr.m)fetchPT();
 else if(S.pr.nt&&!LN()){
 if(S.pfd.d!=k)S.pfd={d:k};
 PN.forEach(function(x){var t=mins(c.t[x[0]]);if(nm>=t&&nm<=t+10&&!S.pfd[x[0]]){S.pfd[x[0]]=1;save();notif("Mizan 360",(S.ram.on&&x[0]=="Maghrib"&&rmIn())?(en?"Time for Iftar 🌙":"حان وقت الإفطار 🌙"):(en?"Time for "+x[0]:"حان وقت "+x[1]),"p"+x[0])}})}}}
+
+/* ---------- Hourly salawat reminder ---------- */
+function salT(){return L("اللهم صلِّ وسلِّم على نبينا محمد 🤍","O Allah, send blessings and peace upon our Prophet Muhammad 🤍")}
+function salList(){var o=[],n=new Date(),i;for(i=0;i<168;i++){o.push({id:10000+i,channelId:CH,title:"Mizan 360",body:salT(),schedule:{at:new Date(n.getFullYear(),n.getMonth(),n.getDate(),n.getHours()+1+i,0,0),allowWhileIdle:true}})}return o}
 
 /* ---------- Native (Android app) scheduled notifications: work while the app is closed ---------- */
 var NSG="",NST=0,NB=0;
@@ -282,18 +292,21 @@ return Promise.all(ms.map(function(m){return fetch("https://api.aladhan.com/v1/c
 var g=day&&day.date&&day.date.gregorian&&day.date.gregorian.date,mt=/^(\d\d)-(\d\d)-(\d{4})$/.exec(g||"");if(!mt)return;
 PN.forEach(function(x){var v=String(day.timings[x[0]]).slice(0,5);if(!/^\d\d:\d\d$/.test(v))return;
 var at=new Date(+mt[3],+mt[2]-1,+mt[1],+v.slice(0,2),+v.slice(3,5));
+var ak=x[0]=="Fajr"?"m":x[0]=="Asr"?"e":"";
+if(ak&&hasA(ak)){var a2=new Date(at.getTime()+12e5);if(a2>now&&a2<=lim)out.push({id:id++,channelId:CH,title:"Mizan 360",body:ak=="m"?(en?"Time for your morning adhkar ☀️":"وقت أذكار الصباح ☀️"):(en?"Time for your evening adhkar 🌙":"وقت أذكار المساء 🌙"),schedule:{at:a2,allowWhileIdle:true}})}
 if(at<=now||at>lim)return;
 var iftar=S.ram.on&&x[0]=="Maghrib"&&(function(){var h=hij(at);return !!h&&h.month==9})();
 out.push({id:id++,channelId:CHA,title:"Mizan 360",body:iftar?(en?"Time for Iftar 🌙":"حان وقت الإفطار 🌙"):(en?"Time for "+x[0]:"حان وقت "+x[1]),schedule:{at:at,allowWhileIdle:true}})})});
 return out})}
 function schedNative(force){
 var ln=LN();if(!ln||NB)return;
-var sig=[S.rem.on,S.rem.t,S.pr.on,S.pr.nt,S.pr.lat,S.pr.lng,S.pr.m,S.lang,S.ram.on,td()].join("|");
+var sig=[S.rem.on,S.rem.t,S.pr.on,S.pr.nt,S.pr.lat,S.pr.lng,S.pr.m,S.lang,S.ram.on,S.sal.on,hasA("m"),hasA("e"),td()].join("|");
 if(!force&&sig==NSG&&Date.now()-NST<216e5)return;
 NB=1;
 ln.getPending().then(function(r){var a=(r.notifications||[]).filter(function(x){return x.id!=2}).map(function(x){return {id:x.id}});return a.length?ln.cancel({notifications:a}):0}).then(function(){
 var en=S.lang=="en",list=[];
 if(S.rem.on){var t=S.rem.t.split(":");list.push({id:1,channelId:CH,title:"Mizan 360",body:en?"Check your habits for today 🌿":"راجع عاداتك النهارده وكمّل اللي فاضل 🌿",schedule:{on:{hour:+t[0],minute:+t[1]},allowWhileIdle:true}})}
+if(S.sal.on)salList().forEach(function(x){list.push(x)});
 if(S.pr.on&&S.pr.nt&&S.pr.lat!==null)return nativePrayers().then(function(a){return list.concat(a)});
 return list}).then(function(list){return list.length?ln.schedule({notifications:list}):0}).then(function(){NSG=sig;NST=Date.now();NB=0}).catch(function(){NB=0})}
 
@@ -319,7 +332,7 @@ n.hrs={};var hr=o.hrs||{};for(var h2=0;h2<24;h2++)if(hr[h2])n.hrs[h2]=num(hr[h2]
 n.tasks=(Array.isArray(o.tasks)?o.tasks:[]).slice(0,100).filter(function(x){return x&&typeof x.t=="string"}).map(function(x){return {t:x.t.slice(0,120),d:x.d?1:0,k:D.test(x.k)?x.k:td()}});
 n.rem={on:!!rr.on,t:T.test(rr.t)?rr.t:"20:00"};n.remD="";
 n.pr={on:!!pp.on,m:[1,2,3,4,5,13].indexOf(+pp.m)>-1?+pp.m:5,lat:typeof pp.lat=="number"&&isFinite(pp.lat)?pp.lat:null,lng:typeof pp.lng=="number"&&isFinite(pp.lng)?pp.lng:null,nt:!!pp.nt,c:null};
-n.pfd={};n.tab="d";n.filter="all";n.ob=1;n.ram={on:!!(o.ram&&o.ram.on)};
+n.pfd={};n.tab="d";n.filter="all";n.ob=1;n.ram={on:!!(o.ram&&o.ram.on)};n.sal={on:!!(o.sal&&o.sal.on),l:""};
 return n}
 
 /* ---------- Habit edit sheet ---------- */
@@ -350,6 +363,7 @@ tg("dark","🌙","الوضع الليلي","التبديل بين الوضع ا�
 tg2("rtg","⏰","تذكير يومي بالعادات","إشعار لو لسه عندك عادات ناقصة",S.rem.on)+
 (S.rem.on?'<p class="lb">وقت التذكير</p><input type="time" id="rt" value="'+S.rem.t+'" style="'+ST+'"><button class="btn ghost" data-a="tn">تجربة التنبيه</button>':'')+
 '<small style="margin-top:10px">التنبيهات بتشتغل لما التطبيق مفتوح أو شغال في الخلفية.</small></div>'+
+'<div class="card" data-nt style="margin-top:14px">'+tg2("saltg","🤍",L("الصلاة على النبي كل ساعة","Salawat every hour"),L("إشعار كل ساعة: اللهم صلِّ وسلِّم على نبينا محمد","An hourly notification to send blessings upon the Prophet ﷺ"),S.sal.on)+'</div>'+
 '<div class="card" style="margin-top:14px">'+
 tg2("ptg","🕌","مواقيت الصلاة","تظهر في صفحة اليوم حسب موقعك",p.on)+tg2("rmtg","🌙",L("وضع رمضان","Ramadan mode"),L("عادات رمضان وعدّاد الإمساك والإفطار","Ramadan habits plus an Imsak and Iftar counter"),S.ram.on)+'<button class="btn ghost" data-a="qb">'+L("اتجاه القبلة","Qibla direction")+'</button>'+
 (p.on?'<p class="lb">طريقة الحساب</p><select id="pm" style="'+ST+'">'+PM.map(function(x){return '<option value="'+x[0]+'"'+(p.m==x[0]?" selected":"")+'>'+x[1]+'</option>'}).join("")+'</select>'+
@@ -364,6 +378,23 @@ var OB={st:0,tpl:null},QB=0;
 function L(a,e){return S.lang=="en"?e:a}
 function hmx(m){var h=Math.floor(m/60),mm=m%60;return S.lang=="en"?h+"h "+mm+"m":h+" س "+mm+" د"}
 
+/* ---------- Morning / Evening adhkar (Hisn al-Muslim, Sa'id al-Qahtani) ---------- */
+var ADK={"m":[{"t":"أَعُوذُ بِاللَّهِ مِنَ الشَّيطَانِ الرَّجِيمِ ﴿اللَّهُ لاَ إِلَهَ إِلاَّ هُوَ الْحَيُّ الْقَيُّومُ لاَ تَأْخُذُهُ سِنَةٌ وَلاَ نَوْمٌ لَّهُ مَا فِي السَّمَوَاتِ وَمَا فِي الأَرْضِ مَن ذَا الَّذِي يَشْفَعُ عِنْدَهُ إِلاَّ بِإِذْنِهِ يَعْلَمُ مَا بَيْنَ أَيْدِيهِمْ وَمَا خَلْفَهُمْ وَلاَ يُحِيطُونَ بِشَيْءٍ مِّنْ عِلْمِهِ إِلاَّ بِمَا شَاء وَسِعَ كُرْسِيُّهُ السَّمَوَاتِ وَالْأَرْضَ وَلاَ يَؤُودُهُ حِفْظُهُمَا وَهُوَ الْعَلِيُّ الْعَظِيمُ﴾","n":1},{"t":"بسم الله الرحمن الرحيم ﴿قُلْ هُوَ اللَّهُ أَحَدٌ اللَّهُ الصَّمَدُ لَمْ يَلِدْ وَلَمْ يُولَدْ وَلَمْ يَكُن لَّهُ كُفُواً أَحَدٌ﴾. بسم الله الرحمن الرحيم ﴿قُلْ أَعُوذُ بِرَبِّ الْفَلَقِ مِن شَرِّ مَا خَلَقَ وَمِن شَرِّ غَاسِقٍ إِذَا وَقَبَ وَمِن شَرِّ النَّفَّاثَاتِ فِي الْعُقَدِ وَمِن شَرِّ حَاسِدٍ إِذَا حَسَدَ﴾. بسم الله الرحمن الرحيم ﴿قُلْ أَعُوذُ بِرَبِّ النَّاسِ مَلِكِ النَّاسِ إِلَهِ النَّاسِ مِن شَرِّ الْوَسْوَاسِ الْخَنَّاسِ الَّذِي يُوَسْوِسُ فِي صُدُورِ النَّاسِ مِنَ الْجِنَّةِ وَ النَّاسِ﴾","n":3},{"t":"أَصْبَحْنَا وَأَصْبَحَ الْمُلْكُ لِلَّهِ، وَالْحَمْدُ لِلَّهِ، لاَ إِلَهَ إلاَّ اللَّهُ وَحْدَهُ لاَ شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ، رَبِّ أَسْأَلُكَ خَيْرَ مَا فِي هَذَا الْيَوْمِ وَخَيْرَ مَا بَعْدَهُ، وَأَعُوذُ بِكَ مِنْ شَرِّ مَا فِي هَذَا الْيَوْمِ وَشَرِّ مَا بَعْدَهُ، رَبِّ أَعُوذُ بِكَ مِنَ الْكَسَلِ وَسُوءِ الْكِبَرِ، رَبِّ أَعُوذُ بِكَ مِنْ عَذَابٍ فِي النَّارِ وَعَذَابٍ فِي الْقَبْرِ.","n":1},{"t":"اللَّهُمَّ بِكَ أَصْبَحْنَا، وَبِكَ أَمْسَيْنَا، وَبِكَ نَحْيَا، وَبِكَ نَمُوتُ وَإِلَيْكَ النُّشُورُ.","n":1},{"t":"اللَّهُمَّ أَنْتَ رَبِّي لَا إِلَهَ إِلاَّ أَنْتَ، خَلَقْتَنِي وَأَنَا عَبْدُكَ، وَأَنَا عَلَى عَهْدِكَ وَوَعْدِكَ مَا اسْتَطَعْتُ، أَعُوذُ بِكَ مِنْ شَرِّ مَا صَنَعْتُ، أَبُوءُ لَكَ بِنِعْمَتِكَ عَلَيَّ، وَأَبُوءُ بِذَنْبِي فَاغْفِرْ لِي فَإِنَّهُ لاَ يَغْفِرُ الذُّنوبَ إِلاَّ أَنْتَ.","n":1},{"t":"اللَّهُمَّ إِنِّي أَصْبَحْتُ أُشْهِدُكَ، وَأُشْهِدُ حَمَلَةَ عَرْشِكَ، وَمَلاَئِكَتِكَ، وَجَمِيعَ خَلْقِكَ، أَنَّكَ أَنْتَ اللَّهُ لَا إِلَهَ إِلاَّ أَنْتَ وَحْدَكَ لاَ شَرِيكَ لَكَ، وَأَنَّ مُحَمَّداً عَبْدُكَ وَرَسُولُكَ","n":4},{"t":"اللَّهُمَّ مَا أَصْبَحَ بِي مِنْ نِعْمَةٍ أَوْ بِأَحَدٍ مِنْ خَلْقِكَ فَمِنْكَ وَحْدَكَ لاَ شَرِيكَ لَكَ، فَلَكَ الْحَمْدُ وَلَكَ الشُّكْرُ.","n":1},{"t":"اللَّهُمَّ عَافِنِي فِي بَدَنِي، اللَّهُمَّ عَافِنِي فِي سَمْعِي، اللَّهُمَّ عَافِنِي فِي بَصَرِي، لاَ إِلَهَ إِلاَّ أَنْتَ. اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنَ الْكُفْرِ، وَالفَقْرِ، وَأَعُوذُ بِكَ مِنْ عَذَابِ القَبْرِ، لاَ إِلَهَ إِلاَّ أَنْتَ","n":3},{"t":"حَسْبِيَ اللَّهُ لاَ إِلَهَ إِلاَّ هُوَ عَلَيهِ تَوَكَّلتُ وَهُوَ رَبُّ الْعَرْشِ الْعَظِيمِ","n":1},{"t":"اللَّهُمَّ إِنِّي أَسْأَلُكَ الْعَفْوَ وَالْعَافِيَةَ فِي الدُّنْيَا وَالآخِرَةِ، اللَّهُمَّ إِنِّي أَسْأَلُكَ الْعَفْوَ وَالْعَافِيَةَ: فِي دِينِي وَدُنْيَايَ وَأَهْلِي، وَمَالِي، اللَّهُمَّ اسْتُرْ عَوْرَاتِي، وَآمِنْ رَوْعَاتِي، اللَّهُمَّ احْفَظْنِي مِنْ بَينِ يَدَيَّ، وَمِنْ خَلْفِي، وَعَنْ يَمِينِي، وَعَنْ شِمَالِي، وَمِنْ فَوْقِي، وَأَعُوذُ بِعَظَمَتِكَ أَنْ أُغْتَالَ مِنْ تَحْتِي.","n":1},{"t":"اللَّهُمَّ عَالِمَ الغَيْبِ وَالشَّهَادَةِ فَاطِرَ السَّمَوَاتِ وَالْأَرْضِ، رَبَّ كُلِّ شَيْءٍ وَمَلِيكَهُ، أَشْهَدُ أَنْ لاَ إِلَهَ إِلاَّ أَنْتَ، أَعُوذُ بِكَ مِنْ شَرِّ نَفْسِي، وَمِنْ شَرِّ الشَّيْطانِ وَشَرَكِهِ، وَأَنْ أَقْتَرِفَ عَلَى نَفْسِي سُوءاً، أَوْ أَجُرَّهُ إِلَى مُسْلِمٍ.","n":1},{"t":"بِسْمِ اللَّهِ الَّذِي لاَ يَضُرُّ مَعَ اسْمِهِ شَيْءٌ فِي الْأَرْضِ وَلاَ فِي السّمَاءِ وَهُوَ السَّمِيعُ الْعَلِيمُ","n":3},{"t":"رَضِيتُ بِاللَّهِ رَبَّاً، وَبِالْإِسْلاَمِ دِيناً، وَبِمُحَمَّدٍ صلى الله عليه وسلم نَبِيّاً","n":3},{"t":"يَا حَيُّ يَا قَيُّومُ بِرَحْمَتِكَ أَسْتَغيثُ أَصْلِحْ لِي شَأْنِيَ كُلَّهُ وَلاَ تَكِلْنِي إِلَى نَفْسِي طَرْفَةَ عَيْنٍ.","n":1},{"t":"أَصْبَحْنَا وَأَصْبَحَ الْمُلْكُ لِلَّهِ رَبِّ الْعَالَمِينَ، اللَّهُمَّ إِنِّي أَسْأَلُكَ خَيْرَ هَذَا الْيَوْمِ: فَتْحَهُ، وَنَصْرَهُ، وَنُورَهُ، وَبَرَكَتَهُ، وَهُدَاهُ، وَأَعُوذُ بِكَ مِنْ شَرِّ مَا فِيهِ وَشَرِّ مَا بَعْدَهُ.","n":1},{"t":"أَصْبَحْنا عَلَى فِطْرَةِ الْإِسْلاَمِ، وَعَلَى كَلِمَةِ الْإِخْلاَصِ، وَعَلَى دِينِ نَبِيِّنَا مُحَمَّدٍ صلى الله عليه وسلم، وَعَلَى مِلَّةِ أَبِينَا إِبْرَاهِيمَ، حَنِيفاً مُسْلِماً وَمَا كَانَ مِنَ الْمُشرِكِينَ.","n":1},{"t":"سُبْحَانَ اللَّهِ وَبِحَمْدِهِ","n":100},{"t":"لاَ إِلَهَ إِلاَّ اللَّهُ وَحْدَهُ لاَ شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ، وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ","n":10},{"t":"لاَ إِلَهَ إِلاَّ اللَّهُ، وَحْدَهُ لاَ شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ","n":100},{"t":"سُبْحَانَ اللَّهِ وَبِحَمْدِهِ: عَدَدَ خَلْقِهِ، وَرِضَا نَفْسِهِ، وَزِنَةَ عَرْشِهِ، وَمِدَادَ كَلِمَاتِهِ","n":3},{"t":"اللَّهُمَّ إِنِّي أَسْأَلُكَ عِلْماً نَافِعاً، وَرِزْقاً طَيِّباً، وَعَمَلاً مُتَقَبَّلاً","n":1},{"t":"أَسْتَغْفِرُ اللَّهَ وَأَتُوبُ إِلَيْهِ","n":100},{"t":"اللَّهُمَّ صَلِّ وَسَلِّمْ عَلَى نَبَيِّنَا مُحَمَّدٍ","n":10}],"e":[{"t":"أَعُوذُ بِاللَّهِ مِنَ الشَّيطَانِ الرَّجِيمِ ﴿اللَّهُ لاَ إِلَهَ إِلاَّ هُوَ الْحَيُّ الْقَيُّومُ لاَ تَأْخُذُهُ سِنَةٌ وَلاَ نَوْمٌ لَّهُ مَا فِي السَّمَوَاتِ وَمَا فِي الأَرْضِ مَن ذَا الَّذِي يَشْفَعُ عِنْدَهُ إِلاَّ بِإِذْنِهِ يَعْلَمُ مَا بَيْنَ أَيْدِيهِمْ وَمَا خَلْفَهُمْ وَلاَ يُحِيطُونَ بِشَيْءٍ مِّنْ عِلْمِهِ إِلاَّ بِمَا شَاء وَسِعَ كُرْسِيُّهُ السَّمَوَاتِ وَالْأَرْضَ وَلاَ يَؤُودُهُ حِفْظُهُمَا وَهُوَ الْعَلِيُّ الْعَظِيمُ﴾","n":1},{"t":"بسم الله الرحمن الرحيم ﴿قُلْ هُوَ اللَّهُ أَحَدٌ اللَّهُ الصَّمَدُ لَمْ يَلِدْ وَلَمْ يُولَدْ وَلَمْ يَكُن لَّهُ كُفُواً أَحَدٌ﴾. بسم الله الرحمن الرحيم ﴿قُلْ أَعُوذُ بِرَبِّ الْفَلَقِ مِن شَرِّ مَا خَلَقَ وَمِن شَرِّ غَاسِقٍ إِذَا وَقَبَ وَمِن شَرِّ النَّفَّاثَاتِ فِي الْعُقَدِ وَمِن شَرِّ حَاسِدٍ إِذَا حَسَدَ﴾. بسم الله الرحمن الرحيم ﴿قُلْ أَعُوذُ بِرَبِّ النَّاسِ مَلِكِ النَّاسِ إِلَهِ النَّاسِ مِن شَرِّ الْوَسْوَاسِ الْخَنَّاسِ الَّذِي يُوَسْوِسُ فِي صُدُورِ النَّاسِ مِنَ الْجِنَّةِ وَ النَّاسِ﴾","n":3},{"t":"أَمْسَيْنَا وَأَمْسَى الْمُلْكُ لِلَّهِ، وَالْحَمْدُ لِلَّهِ، لاَ إِلَهَ إلاَّ اللَّهُ وَحْدَهُ لاَ شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ، رَبِّ أَسْأَلُكَ خَيْرَ مَا فِي هَذِهِ اللَّيْلَةِ وَخَيْرَ مَا بَعْدَهَا، وَأَعُوذُ بِكَ مِنْ شَرِّ مَا فِي هَذِهِ اللَّيْلَةِ وَشَرِّ مَا بَعْدَهَا، رَبِّ أَعُوذُ بِكَ مِنَ الْكَسَلِ وَسُوءِ الْكِبَرِ، رَبِّ أَعُوذُ بِكَ مِنْ عَذَابٍ فِي النَّارِ وَعَذَابٍ فِي الْقَبْرِ.","n":1},{"t":"اللَّهُمَّ بِكَ أَمْسَيْنَا، وَبِكَ أَصْبَحْنَا، وَبِكَ نَحْيَا، وَبِكَ نَمُوتُ وَإِلَيْكَ الْمَصِيرُ.","n":1},{"t":"اللَّهُمَّ أَنْتَ رَبِّي لَا إِلَهَ إِلاَّ أَنْتَ، خَلَقْتَنِي وَأَنَا عَبْدُكَ، وَأَنَا عَلَى عَهْدِكَ وَوَعْدِكَ مَا اسْتَطَعْتُ، أَعُوذُ بِكَ مِنْ شَرِّ مَا صَنَعْتُ، أَبُوءُ لَكَ بِنِعْمَتِكَ عَلَيَّ، وَأَبُوءُ بِذَنْبِي فَاغْفِرْ لِي فَإِنَّهُ لاَ يَغْفِرُ الذُّنوبَ إِلاَّ أَنْتَ.","n":1},{"t":"اللَّهُمَّ إِنِّي أَمْسَيْتُ أُشْهِدُكَ، وَأُشْهِدُ حَمَلَةَ عَرْشِكَ، وَمَلاَئِكَتِكَ، وَجَمِيعَ خَلْقِكَ، أَنَّكَ أَنْتَ اللَّهُ لَا إِلَهَ إِلاَّ أَنْتَ وَحْدَكَ لاَ شَرِيكَ لَكَ، وَأَنَّ مُحَمَّداً عَبْدُكَ وَرَسُولُكَ","n":4},{"t":"اللَّهُمَّ مَا أَمْسَى بِي مِنْ نِعْمَةٍ أَوْ بِأَحَدٍ مِنْ خَلْقِكَ فَمِنْكَ وَحْدَكَ لاَ شَرِيكَ لَكَ، فَلَكَ الْحَمْدُ وَلَكَ الشُّكْرُ.","n":1},{"t":"اللَّهُمَّ عَافِنِي فِي بَدَنِي، اللَّهُمَّ عَافِنِي فِي سَمْعِي، اللَّهُمَّ عَافِنِي فِي بَصَرِي، لاَ إِلَهَ إِلاَّ أَنْتَ. اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنَ الْكُفْرِ، وَالفَقْرِ، وَأَعُوذُ بِكَ مِنْ عَذَابِ القَبْرِ، لاَ إِلَهَ إِلاَّ أَنْتَ","n":3},{"t":"حَسْبِيَ اللَّهُ لاَ إِلَهَ إِلاَّ هُوَ عَلَيهِ تَوَكَّلتُ وَهُوَ رَبُّ الْعَرْشِ الْعَظِيمِ","n":1},{"t":"اللَّهُمَّ إِنِّي أَسْأَلُكَ الْعَفْوَ وَالْعَافِيَةَ فِي الدُّنْيَا وَالآخِرَةِ، اللَّهُمَّ إِنِّي أَسْأَلُكَ الْعَفْوَ وَالْعَافِيَةَ: فِي دِينِي وَدُنْيَايَ وَأَهْلِي، وَمَالِي، اللَّهُمَّ اسْتُرْ عَوْرَاتِي، وَآمِنْ رَوْعَاتِي، اللَّهُمَّ احْفَظْنِي مِنْ بَينِ يَدَيَّ، وَمِنْ خَلْفِي، وَعَنْ يَمِينِي، وَعَنْ شِمَالِي، وَمِنْ فَوْقِي، وَأَعُوذُ بِعَظَمَتِكَ أَنْ أُغْتَالَ مِنْ تَحْتِي.","n":1},{"t":"اللَّهُمَّ عَالِمَ الغَيْبِ وَالشَّهَادَةِ فَاطِرَ السَّمَوَاتِ وَالْأَرْضِ، رَبَّ كُلِّ شَيْءٍ وَمَلِيكَهُ، أَشْهَدُ أَنْ لاَ إِلَهَ إِلاَّ أَنْتَ، أَعُوذُ بِكَ مِنْ شَرِّ نَفْسِي، وَمِنْ شَرِّ الشَّيْطانِ وَشَرَكِهِ، وَأَنْ أَقْتَرِفَ عَلَى نَفْسِي سُوءاً، أَوْ أَجُرَّهُ إِلَى مُسْلِمٍ.","n":1},{"t":"بِسْمِ اللَّهِ الَّذِي لاَ يَضُرُّ مَعَ اسْمِهِ شَيْءٌ فِي الْأَرْضِ وَلاَ فِي السّمَاءِ وَهُوَ السَّمِيعُ الْعَلِيمُ","n":3},{"t":"رَضِيتُ بِاللَّهِ رَبَّاً، وَبِالْإِسْلاَمِ دِيناً، وَبِمُحَمَّدٍ صلى الله عليه وسلم نَبِيّاً","n":3},{"t":"يَا حَيُّ يَا قَيُّومُ بِرَحْمَتِكَ أَسْتَغيثُ أَصْلِحْ لِي شَأْنِيَ كُلَّهُ وَلاَ تَكِلْنِي إِلَى نَفْسِي طَرْفَةَ عَيْنٍ.","n":1},{"t":"أَمْسَيْنَا وَأَمْسَى الْمُلْكُ لِلَّهِ رَبِّ الْعَالَمِينَ، اللَّهُمَّ إِنِّي أَسْأَلُكَ خَيْرَ هَذِهِ اللَّيْلَةِ: فَتْحَهَا، وَنَصْرَهَا، وَنُورَهَا، وَبَرَكَتَهَا، وَهُدَاهَا، وَأَعُوذُ بِكَ مِنْ شَرِّ مَا فِيهَا وَشَرِّ مَا بَعْدَهَا.","n":1},{"t":"أَمْسَيْنَا عَلَى فِطْرَةِ الْإِسْلاَمِ، وَعَلَى كَلِمَةِ الْإِخْلاَصِ، وَعَلَى دِينِ نَبِيِّنَا مُحَمَّدٍ صلى الله عليه وسلم، وَعَلَى مِلَّةِ أَبِينَا إِبْرَاهِيمَ، حَنِيفاً مُسْلِماً وَمَا كَانَ مِنَ الْمُشرِكِينَ.","n":1},{"t":"سُبْحَانَ اللَّهِ وَبِحَمْدِهِ","n":100},{"t":"لاَ إِلَهَ إِلاَّ اللَّهُ وَحْدَهُ لاَ شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ، وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ","n":10},{"t":"أَسْتَغْفِرُ اللَّهَ وَأَتُوبُ إِلَيْهِ","n":100},{"t":"أَعُوذُ بِكَلِمَاتِ اللَّهِ التَّامَّاتِ مِنْ شَرِّ مَا خَلَقَ","n":3},{"t":"اللَّهُمَّ صَلِّ وَسَلِّمْ عَلَى نَبَيِّنَا مُحَمَّدٍ","n":10}]},ADR=null;
+function adk(h){if(!h)return null;var n=h.name||"";return /أذكار الصباح|morning adhkar/i.test(n)?"m":/أذكار المساء|evening adhkar/i.test(n)?"e":null}
+function hasA(k){return S.habits.some(function(h){return adk(h)===k})}
+function adkLoad(k){var n=ADK[k].length,a=S.adr&&S.adr.d==td()&&S.adr[k];return ADK[k].map(function(x,i){var v=a&&+a[i];return v>0?Math.min(v,x.n):0})}
+function adkSave(){S.adr=(S.adr&&S.adr.d==td())?S.adr:{d:td()};S.adr[ADR.k]=ADR.c.slice();save()}
+function adkS(){var k=ADR.k,l=ADK[k];
+sheet('<h3>'+(k=="m"?L("أذكار الصباح","Morning adhkar"):L("أذكار المساء","Evening adhkar"))+'</h3><p class="sub" id="adp"></p>'+
+l.map(function(x,i){return '<div class="ad-i" id="adi'+i+'" data-a="adc" data-i="'+i+'"><p class="ad-t" data-nt>'+esc(x.t)+'</p><div class="ad-f"><span class="ad-c" id="adn'+i+'"></span><button class="ad-d" data-a="add0" data-i="'+i+'">'+L("تم","Done")+'</button></div></div>'}).join("")+
+'<button class="btn ghost" data-a="adr0">'+L("إعادة العدّ من الأول","Reset counters")+'</button>'+
+'<small style="text-align:center;margin-top:10px">'+L("المصدر: حصن المسلم، سعيد بن علي بن وهف القحطاني","Source: Hisn al-Muslim (Sa\u2019id al-Qahtani)")+'</small>');
+l.forEach(function(x,i){adkU(i,1)});adkP()}
+function adkP(){var l=ADK[ADR.k],d=ADR.c.filter(function(c,i){return c>=l[i].n}).length,e=$("#adp");if(e)e.textContent=L("اضغط على الذكر للعدّ","Tap a dhikr to count")+" · "+d+" / "+l.length}
+function adkDone(){return ADK[ADR.k].every(function(x,i){return ADR.c[i]>=x.n})}
+function adkU(i,q){var e=$("#adn"+i),c=ADR.c[i],n=ADK[ADR.k][i].n,b=$("#adi"+i);if(!e||!b)return;
+e.textContent=c>=n?"✓":(n>1?c+" / "+n:"0 / 1");b.className="ad-i"+(c>=n?" done":"");
+if(!q){adkP();adkSave();if(adkDone()){var h=H(ADR.h);if(h&&!prog(h,td())){S.log[h.id]=S.log[h.id]||{};S.log[h.id][td()]=1;save();render()}toast(L("تقبل الله منك 🤲","May Allah accept it 🤲"))}}}
 /* ---------- Onboarding ---------- */
 var TPL={
 student:[["مذاكرة","Study","min",60,"دراسة","#a3e635"],["مراجعة","Review","min",30,"دراسة","#38bdf8"],["قراءة","Reading","min",20,"دراسة","#a78bfa"],["النوم مبكراً","Sleep early","yn",0,"صحة","#34d399"],["شرب مياه","Drink water","yn",0,"صحة","#fb923c"]],
@@ -489,6 +520,10 @@ ta:function(){var i=$("#tn"),v=i&&i.value.trim();if(!v)return toast("اكتب ا
 tk:function(t){var x=S.tasks[+t.dataset.i];x.d=x.d?0:1;x.k=td();save();render()},
 tx:function(t){S.tasks.splice(+t.dataset.i,1);save();render()},
 saveh:function(){keep();var n=(tmp.name||"").trim();if(!n)return toast("اكتب اسم العادة");S.habits.push({id:Date.now().toString(36),name:n,type:tmp.type,goal:tmp.type=="min"?Math.max(0,+tmp.goal||0):0,color:tmp.color,area:tmp.area||"صحة"});save();cl();render()},
+adk:function(t){var h=H(t.dataset.h),k=adk(h);if(!k)return;ADR={h:h.id,k:k,c:adkLoad(k)};adkS()},
+adc:function(t){var i=+t.dataset.i;if(!ADR)return;var n=ADK[ADR.k][i].n;if(ADR.c[i]>=n)return;ADR.c[i]++;try{navigator.vibrate&&navigator.vibrate(ADR.c[i]>=n?60:12)}catch(e){}adkU(i);t.classList.add("tap");setTimeout(function(){t.classList.remove("tap")},90)},
+add0:function(t){var i=+t.dataset.i;if(!ADR)return;var n=ADK[ADR.k][i].n;if(ADR.c[i]>=n)return;ADR.c[i]=n;adkU(i)},
+adr0:function(){if(!ADR)return;ADR.c=ADK[ADR.k].map(function(){return 0});adkSave();adkS()},
 cell:function(t){var h=H(t.dataset.h),d=t.dataset.d;S.log[h.id]=S.log[h.id]||{};
 if(h.type=="yn"){S.log[h.id][d]=S.log[h.id][d]?0:1;save();render()}
 else sheet('<h3>'+esc(h.name)+'</h3><label>عدد الدقائق</label><input type="number" inputmode="numeric" id="mv" value="'+(val(h,d)||"")+'" placeholder="مثال: 20"><button class="btn" data-a="savem" data-h="'+h.id+'" data-d="'+d+'">حفظ</button>')},
@@ -509,6 +544,7 @@ impok:function(){if(!pend)return cl();try{localStorage.setItem(K,JSON.stringify(
 rtg:function(t){if(!t.checked){S.rem.on=false;save();render();return}askN(function(ok){S.rem.on=!!ok;S.remD="";save();render()})},
 tn:function(){askN(function(ok){if(ok)notif("Mizan 360",S.lang=="en"?"Notifications are working 🎉":"التنبيهات شغالة 🎉","test")})},
 ptg:function(t){if(!t.checked){S.pr.on=false;save();render();return}var go=function(){S.pr.on=true;save();fetchPT(1);render()};if(S.pr.lat!==null)go();else getLoc(function(ok){if(ok)go();else{S.pr.on=false;render()}})},
+saltg:function(t){if(!t.checked){S.sal.on=false;save();render();return}askN(function(ok){S.sal.on=!!ok;S.sal.l="";save();render()})},
 pnt:function(t){if(!t.checked){S.pr.nt=false;save();return}askN(function(ok){S.pr.nt=!!ok;save();render()})},
 loc:function(){getLoc(function(ok){if(ok){fetchPT(1);refPC()}})},
 obl:function(t){S.lang=t.dataset.v;ap();save();render()},
